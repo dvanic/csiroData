@@ -1,0 +1,26 @@
+---
+title: "Exploring data for SQL Course"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+```{r}
+library("RSQLite")
+library("dplyr")
+library("dbplyr")
+setwd("/Users/darya/Documents/06_Teaching/SWC/2018_CSIRO/1314459")
+plotsCSV <- read.csv("plots.csv")
+speciesCSV <- read.csv("species.csv")
+surveysCSV <- read.csv("surveys.csv")
+
+mammals <- DBI::dbConnect(RSQLite::SQLite(), "portal_mammals.sqlite")
+```
+
+Using SQL to query the table:
+
+```{r}
+src_dbi(mammals)
+tbl(mammals, sql("SELECT year, species_id, plot_id FROM surveys"))
+```
+
+
