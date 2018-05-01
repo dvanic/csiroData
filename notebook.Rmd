@@ -21,6 +21,38 @@ Using SQL to query the table:
 ```{r}
 src_dbi(mammals)
 tbl(mammals, sql("SELECT year, species_id, plot_id FROM surveys"))
+
 ```
 
+Using dplyr syntax
+```{r}
+surveys <- tbl(mammals, "surveys")
+surveys %>% 
+  select(year, species_id, plot_id)
+```
+
+```{r}
+head(surveys) #works
+nrow(surveys) #doesn't work
+show_query(head(surveys)) # what dbplyr is doing
+```
+Dplyr IS LAZY!!! Only gathers results at the end
+```{r}
+data_subset <- surveys %>% 
+  filter(weight < 5) %>%
+  select(species_id, sex, weight) %>% 
+  select(-sex) %>%
+  collect()
+```
+
+Lets do some joins
+```{r}
+plots <- tbl(mammals, "plots")
+joined <- plots %>% 
+  filter(plot_id == 1) %>% 
+  inner_join(surveys) %>% 
+  collect()
+```
+
+Write a query (using R and SQL syntax) to return the number of rodents observed in each plot each year. Query should return counts of rodents by year.
 
