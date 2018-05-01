@@ -1,0 +1,279 @@
+Darya Vanichkina
+
+https://github.com/dvanic/csiroData
+
+SELECT person, count(reading) FROM Survey WHERE quant='sal' AND reading <= 1 GROUP BY person;
+
+cd "directory"
+rm *csv*
+wget https://raw.githubusercontent.com/dvanic/csiroData/master/plots.csv
+wget https://raw.githubusercontent.com/dvanic/csiroData/master/surveys.csv
+wget https://raw.githubusercontent.com/dvanic/csiroData/master/species.csv
+wget https://raw.githubusercontent.com/dvanic/csiroData/master/portal_mammals.sqlite
+
+## Links to data
+wget http://swcarpentry.github.io/sql-novice-survey/files/survey.db
+
+
+
+
+# General
+        1. Write a query that selects only the name column from the Site table.
+        SELECT name FROM Site;
+
+***
+# Sorting and Removing Duplicates
+### TASK
+-> 2. Write a query that selects distinct dates from the Visited table.
+### Task
+Write a query that displays the full names of the scientists in the Person table, ordered by family name.
+SELECT personal, family FROM Person ORDER BY family;
+
+# 3. Filtering
+http://swcarpentry.github.io/sql-novice-survey/figures/
+### TASK
+Suppose we want to select all sites that lie more than 42 degrees from the poles. Our first query is:
+
+    SELECT * FROM Site WHERE (lat > -48) OR (lat < 48);
+    SELECT * FROM Site WHERE (lat > -48) AND (lat < 48);
+
+
+Correct it
+
+#### Task – outliers AKA weird readings
+Normalized salinity readings are supposed to be between 0.0 and 1.0. Write a query that selects all records from Survey with salinity values outside this range.
+
+
+#### Task
+Which of these expressions are true?
+```
+1.        'a' LIKE 'a'
+2.        'a' LIKE '%a'
+3.        'beta' LIKE '%a'
+4.        'alpha' LIKE 'a%%'
+5.        'alpha' LIKE 'a%p%'
+```
+
+*** 
+# 4. Calculating New Values
+### Students task
+After further reading, we realize that Valentina Roerich was reporting salinity as percentages. Write a query that returns all of her salinity measurements from the Survey table with the values divided by 100.
+
+SELECT reading/100 FROM Survey WHERE (quant='sal') AND Person='roe';
+
+### Task
+Use UNION to create a consolidated list of salinity measurements in which Valentina Roerich’s, and only Valentina’s, have been corrected as described in the previous challenge. The output should be something like:
+taken        reading
+619        0.13
+622        0.09
+734        0.05
+751        0.1
+752        0.09
+752        0.416
+837        0.21
+837        0.225
+
+### Task 3
+The site identifiers in the Visited table have two parts separated by a ‘-‘:
+SELECT DISTINCT site FROM Visited;
+site
+DR-1
+DR-3
+MSK-4
+Some major site identifiers (i.e. the letter codes) are two letters long and some are three. The “in string” function instr(X, Y) returns the 1-based index of the first occurrence of string Y in string X, or 0 if Y does not exist in X. The substring function substr(X, I, [L]) returns the substring of X starting at index I, with an optional length L. Use these two functions to produce a list of unique major site identifiers. (For this data, the list should contain only “DR” and “MSK”).
+
+***
+
+# 5. Missing Data
+####TASK
+Write a query that sorts the records in Visited by date, omitting entries for which the date is not known (i.e., is null).
+
+
+####TASK
+What do you expect the query:
+
+    SELECT * FROM Visited WHERE dated IN ('1927-02-08', NULL);
+
+to produce? What does it actually produce?
+
+####TASK
+Discussion point:
+
+Some database designers prefer to use a sentinel value to mark missing data rather than null. For example, they will use the date “0000-00-00” to mark a missing date, or -1.0 to mark a missing salinity or radiation reading (since actual readings cannot be negative). What does this simplify? What burdens or risks does it introduce?
+
+***
+# 6. Aggregation
+
+####TASK 1
+How many temperature readings did Frank Pabodie record, and what was their average value?
+
+
+
+####TASK 2
+The average of a set of values is the sum of the values divided by the number of values. Does this mean that the avg function returns 2.0 or 3.0 when given the values 1.0, null, and 5.0?
+3 because it’s diving by 2.
+
+
+####TASK 3
+We want to calculate the difference between each individual radiation reading and the average of all the radiation readings. We write the query:
+
+    SELECT reading - avg(reading) FROM Survey WHERE quant='rad';
+
+What does this actually produce, and why?
+
+select reading - (select avg(reading) from survey where quant='rad') from survey where quant='rad';
+
+####TASK 4
+
+The function group_concat(field, separator) concatenates all the values in a field using the specified separator character (or ‘,’ if the separator isn’t specified). Use this to produce a 
+one-line list of scientists’ names, such as:
+
+William Dyer, Frank Pabodie, Anderson Lake, Valentina Roerich, Frank Danforth
+
+Can you find a way to order the list by surname?
+
+
+## Extratask  5
+ Create a view for only the DR sites from the visited table
+
+
+***
+# 7. Combining Data
+SELECT Site.lat, Site.long, Visited.dated, Survey.quant, Survey.reading FROM Site JOIN Visited JOIN Survey ON Site.name = Visited.site AND Visited.id=Survey.taken WHERE Visited.dated IS NOT NULL;
+
+http://sql-joins.leopard.in.ua/
+
+TASK 1
+Write a query that lists all radiation readings from the DR-1 site.
+
+ 
+TASK 2 (SKIP THIS)
+Write a query that lists all sites visited by people named “Frank”.
+
+
+TASK 3 (SKIP THIS)
+Describe what this is doing
+```
+SELECT Site.name FROM Site JOIN Visited
+ON Site.lat<-49.0 AND Site.name=Visited.site AND Visited.dated>='1932-01-01';
+```
+
+TASK 4 (DO THIS)
+
+Write a query that shows each site with exact location (lat, long) ordered by visited date, followed by personal name and family name of the person who visited the site and the type 
+of measurement taken and its reading. Please avoid all null values. Tip: you should get 15 records with 8 fields.
+
+SELECT Site.name, Site.lat, Site.long, Visited.dated,  Person.personal, Person.family, Survey.quant, Survey.reading
+FROM Site JOIN Visited JOIN Person JOIN Survey
+ON Site.name=Visited.site AND Visited.id = Survey.taken AND Person.id = Survey.person
+-- remove NULL values
+WHERE Survey.person IS NOT NULL AND Visited.dated IS NOT NULL
+ORDER BY Visited.dated
+;
+
+```
+
+Extra Task 5: (DO THIS)
+Join all of the tables together to make a single table, as if you were going to write out the data to a flat spreadsheet.
+SELECT *
+FROM Site JOIN Visited JOIN Person JOIN Survey
+ON Site.name=Visited.site AND Visited.id = Survey.taken AND Person.id = Survey.person
+;
+***
+
+## Data Hygiene
+
+### Task - Identifying Atomic Values
+Which of the following are atomic values? Which are not? Why?
+
+- New Zealand
+- 87 Turing Avenue
+- January 25, 1971
+- the XY coordinate (0.5, 3.3)
+
+***
+## Creating and Modifying Data
+
+CREATE TABLE Survey1(
+taken integer NOT NULL, -- where reading taken
+person text,            -- who took it, may not know who took it
+quant real NOT NULL,    -- quantity measured, cannot be null
+reading real NOT NULL,  -- the actual reading, also has to be not null
+primary key(taken, quant),
+foreign key(taken) references Visited(id),
+foreign key(person) references Person(id)
+);
+
+CREATE TABLE JustLatLong(lat text, long text);
+INSERT INTO JustLatLong SELECT lat, long FROM SITE;
+INSERT INTO Site1 VALUES ('DR-1', -49, -128),('DR-2', -20, -20);
+UPDATE Site1 SET lat=50, long=100 WHERE name='DR-2';
+
+#### TASK - Replacing NULL (DO THIS)
+Write an SQL statement to replace all uses of null in Survey.person with the string 'unknown'.
+
+
+
+#### Generating Insert Statements (SKIP THIS)
+One of our colleagues has sent us a CSV file containing temperature readings by Robert Olmstead, which is formatted like this:
+
+Taken,Temp
+619,-21.5
+622,-15.5
+
+Write a small Python program that reads this file in and prints out the SQL INSERT statements needed to add these records to the survey database. Note: you will need to add an entry for Olmstead to the Person table. If you are testing your program repeatedly, you may want to investigate SQL’s INSERT or REPLACE command.
+
+
+#### Backing up with SQL
+
+SQLite has several administrative commands that aren’t part of the SQL standard. One of them is .dump, which prints the SQL commands needed to re-create the database. Another is .read, which reads a file created by .dump and restores the database. A colleague of yours thinks that storing dump files (which are text) in version control is a good way to track and manage changes to the database. What are the pros and cons of this approach? (Hint: records aren’t stored in any particular order.)
+
+
+# Day 2 warmup - from DC
+https://github.com/dvanic/csiroData
+
+SQL queries help us ask specific questions which we want to answer about our data. The real skill with SQL is to know how to translate our scientific questions into a sensible SQL query (and subsequently visualize and interpret our results).
+
+The data we will be using is a time-series for a small mammal community in southern Arizona. This is part of a project studying the effects of rodents and ants on the plant community that has been running for almost 40 years. The rodents are sampled on a series of 24 plots, with different experimental manipulations controlling which rodents are allowed to access which plots.
+
+
+Have a look at the following questions; these questions are written in plain English. Can you translate them to SQL queries and give a suitable answer?
+
+1. How many plots from each type are there?
+2. How many specimens are of each sex are there for each year?
+3. How many specimens of each species were captured in each type of plot?
+4. What is the average weight of each taxa?
+5. What are the minimum, maximum and average weight for each species of Rodent?
+6. What is the average hindfoot length for male and female rodent of each species? Is there a Male / Female difference?
+7. What is the average weight of each rodent species over the course of the years? Is there any noticeable trend for any of the species?
+
+
+# R and SQL
+
+#### TASK
+Write a query that returns the number of rodents observed in each plot in each year.
+
+Hint: Connect to the species table and write a query that joins the species and survey tables together to exclude all non-rodents. The query should return counts of rodents by year.
+
+Optional: Write a query in SQL that will produce the same result. You can join multiple tables together using the following syntax where foreign key refers to your unique id (e.g., species_id):
+
+left_join(surveys, species) %>%
+  filter(taxa == "Rodent") %>% 
+  group_by(plot_id, year) %>%
+  tally %>% 
+  collect()
+  
+  
+#### Write a query that returns the total number of rodents in each genus caught in the different plot types.
+
+Hint: Write a query that joins the species, plot, and survey tables together. The query should return counts of genus by plot type.
+
+
+if we were interested in the number of genera found in each plot type? Using  tally() gives the number of individuals, instead we need to use n_distinct() to count the number of unique values found in a column.
+
+
+
+## Where to from here
+AMAZING Databases course from Stanford
+https://lagunita.stanford.edu/courses/Engineering/db/2014_1/about
+
