@@ -1252,12 +1252,3 @@ Have a look at the following questions; these questions are written in plain Eng
 7. What is the average weight of each rodent species over the course of the years? Is there any noticeable trend for any of the species?
 
 
-```
-SELECT plot_type, COUNT(*) AS num_plots FROM plots GROUP BY plot_type;
-SELECT year, sex, COUNT(*) AS num_animal FROM surveys WHERE sex IS NOT NULL GROUP BY sex, year;
-SELECT species_id, plot_type, COUNT(*) FROM surveys JOIN plots USING(plot_id) WHERE species_id IS NOT NULL  GROUP BY species_id, plot_type;
-SELECT taxa, AVG(weight)  FROM surveys  JOIN species ON species.species_id = surveys.species_id GROUP BY taxa;  
-SELECT surveys.species_id, MIN(weight), MAX(weight), AVG(weight) FROM surveys  JOIN species ON surveys.species_id = species.species_id  WHERE taxa = 'Rodent'  GROUP BY surveys.species_id;  
-SELECT surveys.species_id, sex, AVG(hindfoot_length) FROM surveys JOIN species ON surveys.species_id = species.species_id  WHERE (taxa = 'Rodent') AND (sex IS NOT NULL)  GROUP BY surveys.species_id, sex;  
-SELECT surveys.species_id, year, AVG(weight) as mean_weight FROM surveys  JOIN species ON surveys.species_id = species.species_id  WHERE taxa = 'Rodent' GROUP BY surveys.species_id, year;
-```
