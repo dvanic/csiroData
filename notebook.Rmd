@@ -20,6 +20,11 @@ Using SQL to query the table:
 
 ```{r}
 src_dbi(mammals)
+# shows tables i.e. equivalent of .tables
+dbListTables(mammals)
+# shows all fields of a particular table, i.e. almost equivalent of .schema
+dbListFields(mammals, "surveys")
+
 tbl(mammals, sql("SELECT year, species_id, plot_id FROM surveys"))
 
 ```
