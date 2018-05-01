@@ -25,7 +25,7 @@ dbListTables(mammals)
 # shows all fields of a particular table, i.e. almost equivalent of .schema
 dbListFields(mammals, "surveys")
 
-tbl(mammals, sql("SELECT year, species_id, plot_id FROM surveys"))
+tbl(mammals, sql("SELECT year, species_id, plot_id FROM surveys")) 
 
 ```
 
@@ -60,4 +60,20 @@ joined <- plots %>%
 ```
 
 Write a query (using R and SQL syntax) to return the number of rodents observed in each plot each year. Query should return counts of rodents by year.
+
+
+```{r}
+# dplyr
+species <- tbl(mammals, "species")
+
+left_join(surveys, species) %>%
+  filter(taxa == "Rodent") %>% 
+  group_by(plot_id, year) %>%
+  tally %>% 
+  collect()
+
+query <- "SELECT count(Surveys.record_id) FROM SURVEYS JOIN SPECIES ON Surveys.species_id= Species.species_id WHERE Species.taxa=\"Rodent\" GROUP BY Surveys.year AND Surveys.plot_id"
+
+tbl(mammals, sql(query))
+```
 
